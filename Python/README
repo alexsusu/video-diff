@@ -1,0 +1,194 @@
+Following http://xanthippi.ceid.upatras.gr/people/evangelidis/video_alignment/, we create a fusion video with G for reference warped, and R&B are left untouched for the input video.
+    <<Fusion videos have been created by combining the R and B channels from the input sequence and G component from the reference sequence, but warped in space and time w.r.t the outcome of each algorithm. This way changes are identified with lawn-green and hot-pink colors.>>
+
+The Highway Sequence videos of Evangelidis can be found at http://xanthippi.ceid.upatras.gr/people/evangelidis/video_alignment/#backroad_set .
+
+INSTALLATION PREREQUISITES:
+---------------------------
+    To run the application you need to have installed
+        OpenCV 2.4.8/2.4.9
+         (or OpenCV 3.0, if you want to use from Python the fast OpenCV ECC implementation
+            - yet it doesn't support multiscale resolution, so if the input videos have
+            fisheye effect then OpecCVs's single-resolution ECC will most likely fail to
+            align properly frames) - you have binaries for Windows for 2.4.8/2.4.9,
+        but for Linux you require to build OpenCV from source code, which turns
+        to be a bit tricky to do it well.
+    Note: Very interesting info on how to build OpenCV with ffmpeg support, etc
+      - http://jayrambhia.wordpress.com/2012/06/20/install-opencv-2-4-in-ubuntu-12-04-precise-pangolin/
+        https://github.com/jayrambhia/Install-OpenCV/tree/master/Ubuntu/2.4
+        https://raw.github.com/jayrambhia/Install-OpenCV/master/Ubuntu/2.4/opencv2_4_0.sh
+        https://raw.github.com/jayrambhia/Install-OpenCV/master/Ubuntu/2.4/opencv2_4_8.sh
+     (Note: latest source code at https://github.com/Itseez/opencv)
+
+    Note: You require to install python 2.7, numpy and scipy (scipy for the weave package,
+        which allows faster method implementation of code in C/C++, running in
+        Python - this should work easily in Linux; scipy also to provide a
+        substitute KD-tree implementation, which seems to be exact and closer in results
+        to the Matlab implementation from Evangelidis, but is slower,
+        less versatile and consumes more memory than OpenCV's FLANN library
+        implementation); also the matplotlib Python module.
+
+
+TO RUN THE PROGRAM:
+-------------------
+  To run the Video Alignment for Change Detection (Video-Based Change Detection) program give the following command:
+    python Main.py current_query_video reference_(template)_video >stdout
+  For example:
+    python Main.py Videos\IMG_0109.avi Videos\IMG_0110.avi >stdout
+
+  To run the video alignment as it is supposed to be done on a server (1st preprocessing mode, then a lot of video alignment of the various query videos) give:
+    ./run.sh current_query_video reference_(template)_video >stdout
+  (it will split the run in the 2 phases - this is good for performance measurements)
+
+%The program performs the image alignment between all possible pairs of frames of both videos.
+NOTE: At least on Windows the videos need to be in AVI format - you normally need to convert videos
+    recorded with recent smartphones, etc from MPEG to AVI. A Linux conversion tool you can use is:
+  avconv -i 1280_720.mp4  -vcodec mpeg4 -acodec ac3 -ar 48000 -ab 192k -same_quant video.avi
+  If you compile OpenCV with "full" ffmpeg support (see above) OpenCV can read also MPEG (MP4) media files, etc 
+
+
+To configure the program:
+-------------------------
+  Go to config.py and choose:
+    - USE_EVANGELIDIS_ALGO = True to use Evangelidis' great algo.
+        Otherwise you will use our inhouse algo
+        Take a look at the other options put in that section of the script.
+
+    - USE_GUI = True
+        if you want to see the pairs of frames of both videos
+
+      USE_GUI = False
+        if you want the program to generate only textual output
+
+     Note: If you want to display the diff between the reference imagine and
+            the input warped image after the spatial alignment you can edit
+            MatchFrames.py and make:
+        DISPLAY_RIGHT_IMAGE_WITH_DIFF = True
+
+    - SAVE_FRAMES = True
+        saves each pair of frames as PNG images, after examining them.
+
+    - temporal alignment:
+      - to choose between various Feature detectors and descriptor matchers change
+                  the following line with the other suggested commented values:
+          FEATURE_DETECTOR_AND_MATCHER = "orb-flann" # ORB detector with Flann descriptor matcher
+         Normally ORB is pretty fast (but less accurate??) than SIFT and SURF.
+          Also ORB is free - while if you plan to use SIFT and SURF you need to
+              pay royalties since the algorithms are patented - see
+                  http://docs.opencv.org/modules/nonfree/doc/nonfree.html
+                  "The module contains algorithms that may be patented in some
+                      countries or have some other limitations on the use."
+                  (also http://web.guohuiwang.com/technical-notes/sift_surf_opencv_android
+                      "However, due to the well-known patent issues, SIFT and SURF
+                          algorithms are categorized into nonfree module and not included
+                          in the release package of OpenCV for Android." )
+
+    - spatial alignment:
+      - We can use for spatial image alignment/registration one of several algorithms:
+          - "ECC" (Evangelidis' ECC algo)
+          - "LK" (Lucas-Kanade) - standard image alignment
+          - "HOMOGRAPHY", just use the homography from the matched features extracted from the pair of frames/images
+
+    - clustering
+      - to make less/more sensitive the program to the non-matched features to trigger alarm,
+          we use hierarchical clustering, and then we check each resulting optimal cluster
+          to see if its number of elements >= THRESHOLD_NUM_NONMATCHED_ELEMENTS_IN_CLUSTER,
+          in which case, we trigger the "alarm" - we notify further the system that an object
+          in the reference video is no longer present.
+
+          - NOTE: If you want to see a separate complete result on
+              Hierarchical clustering
+              (using Python's matplotlib) make:
+                  DISPLAY_PYTHON_CLUSTERING = True
+
+
+If you make
+    USE_GUI = True
+  the frames of both videos will be displayed (as already said above).
+  The matched features of both image will be:
+      - green with lines between them - for the inliers;
+      - red crosses without lines between them - for the outliers.
+    The green lines going from one image to the next repesents the inlier
+        feature matches - see function explore_match() in MatchFrames.
+  The matched features of both images that are filtered out by filter_matches()
+        (basically non-matched keypoints)
+        are depicted with green-grayish big circles in the input (left) frame.
+    The features that are matched in the reference frame are depicted with bright
+        green features.
+    The black features from LK alignment (actually supposed to be green, but the image is gray) are obtained from cv2.goodFeaturesToTrack().
+
+
+In the right image (might overlap a bit with the left one) we draw a polygon white frame:
+    - this repersents the original 4 corners of the right image w.r.t. the homography
+        transformation.
+   Note that this polygon can vary between different runs, since the homography
+        computation is probabilistic.
+
+About the ECC spatial image alignment/registration algorithm :
+    - it seems (Vali Codreanu - please comment!!!!) all image alignment
+        algorithms are subject to error (robustness issues) if the template and
+        target images are rather different (more than 10%?? !!!! - find info in
+        paper and quote)
+      I've tested the ECC in our Python program and the original implementation
+        (Z:\1PhD\UPB_RO\CV_Video_Based_Detection\1Implementations\Image_Alignment\ECC_Evangelidis\al.bat)
+        and in both cases it performs the same.
+    Note that on Evangelidis' videos
+        input.avi
+        reference.avi
+      the 1st 2 frames don't match well - is it because of the white "vertical" mark in the middle of the road???
+
+
+
+
+
+
+About Evangelidis' algorithm, from the TPAMI 2013 journal paper:
+----------------------------------------------------------------
+    The processing pipeline does the following:
+        - as can be seen in synchro_script.m
+            - extract multi-scale Harris features
+            - paper Section 5.1., method 1:
+                - compute for each scale:
+                    - a multiscale_quad_tree with ALL the quads of ALL reference frames, built using findquads()
+                    - multiscale_quad_retrieval that builds a vote-space for the current scale and does the voting (+ spatiotemporal coherence)
+                        - it uses findquads to build quads for each query frame
+                            - in order to find similar quads with each query quad they use kdtree_ball_query from that particular query quad, with a radius of 0.1
+
+    paper Section 4.1
+        Therefore, given a query quad, we look for similar reference quads using a near neighbor(range search) approach.
+        "Since quad structures are of low dimensionality, it is possible to store them in a kD-tree structure so that near neighbor searches can be done efficiently."
+
+    The diffs between
+        - dp3
+            - global, tries to approximate an OPTIMAL path MONOTONOUS in the reference frames
+            "a global solution can take advantage of the successive nature of video frames"
+        - causal (for me it sound too philosophical this word :) ) - basically it's greedy, local optimization
+
+       is that dp3 tries to get closer to optimal solution, while the causal algorithm is greedy.
+
+    About the colors in the spatial alignment visual outputs, from the TPAMI2013 paper:
+        "To highlight changes with green and pink colors, we use a
+        modified RGB representation [1], by replacing the G
+        channel of the input frame with the G component of the
+        reference frame, but warped in space and time based on
+        the ECC outcome".
+
+        "Differences between query and reference frame are illustrated using
+            lawn-green and hot-pink colors."
+
+
+If we want to get a feeling how much time is spent in the various operations look
+    in the stdout file for the string:
+        [sec]
+
+  For example:
+    detector.detectAndCompute() took 0.018876 [sec]
+    knnMatch() and filter_matches() took 0.015406 [sec]
+    cv2.findHomography() took 0.086174 [sec]
+    SpatialAlignment() took 0.018335 [sec]
+    **
+    ComputeFeatures1(): detector.detectAndCompute() took 0.010006 [sec]
+    ComputeFeaturesAndMatch2(): detector.detectAndCompute() took 0.011082 [sec]
+    FeatureMatchAndHomography(): SpatialAlignment() took 0.017158 [sec]
+    ClusterUnmatchedKeypoints(): HierarchicalClustering() took 3 or 7.88220 [sec]??? - probably because of loading first time the modules
+    ClusterUnmatchedKeypoints(): HierarchicalClustering() took 0.09826 [sec]
