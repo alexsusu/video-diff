@@ -799,30 +799,32 @@ def interp2(V, Xq, Yq, interpolationMethod="linear"):
         A synonym for PyArray_DESCR, named to be consistent with the .dtype. usage within Python.
     """
 
-    common.DebugPrint("interp2(): V.strides = %s" % str(V.strides));
-    common.DebugPrint("interp2(): V.shape = %s" % str(V.shape));
-    common.DebugPrint("interp2(): V.dtype = %s" % str(V.dtype));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("interp2(): V.strides = %s" % str(V.strides));
+        common.DebugPrint("interp2(): V.shape = %s" % str(V.shape));
+        common.DebugPrint("interp2(): V.dtype = %s" % str(V.dtype));
 
-    common.DebugPrint("interp2(): Xq.strides = %s" % str(Xq.strides));
-    common.DebugPrint("interp2(): Xq.shape = %s" % str(Xq.shape));
-    common.DebugPrint("interp2(): Xq.dtype = %s" % str(Xq.dtype));
+        common.DebugPrint("interp2(): Xq.strides = %s" % str(Xq.strides));
+        common.DebugPrint("interp2(): Xq.shape = %s" % str(Xq.shape));
+        common.DebugPrint("interp2(): Xq.dtype = %s" % str(Xq.dtype));
 
-    common.DebugPrint("interp2(): Yq.strides = %s" % str(Yq.strides));
-    common.DebugPrint("interp2(): Yq.shape = %s" % str(Yq.shape));
-    common.DebugPrint("interp2(): Yq.dtype = %s" % str(Yq.dtype));
+        common.DebugPrint("interp2(): Yq.strides = %s" % str(Yq.strides));
+        common.DebugPrint("interp2(): Yq.shape = %s" % str(Yq.shape));
+        common.DebugPrint("interp2(): Yq.dtype = %s" % str(Yq.dtype));
 
-    common.DebugPrint("interp2(): res.strides = %s" % str(res.strides));
-    common.DebugPrint("interp2(): res.shape = %s" % str(res.shape));
-    common.DebugPrint("interp2(): res.dtype = %s" % str(res.dtype));
+        common.DebugPrint("interp2(): res.strides = %s" % str(res.strides));
+        common.DebugPrint("interp2(): res.shape = %s" % str(res.shape));
+        common.DebugPrint("interp2(): res.dtype = %s" % str(res.dtype));
 
     if False:
         assert V.dtype == np.float64; #np.int64;
         assert Xq.dtype == np.float64; #np.int64;
         assert Yq.dtype == np.float64; #np.int64;
     else:
-        common.DebugPrint("interp2(): V.dtype (again) = %s" % str(V.dtype));
-        common.DebugPrint("interp2(): V.dtype == np.float32 is %s" % str(V.dtype == np.float32));
-        common.DebugPrint("interp2(): V.dtype == float is %s" % str(V.dtype == float));
+	if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("interp2(): V.dtype (again) = %s" % str(V.dtype));
+            common.DebugPrint("interp2(): V.dtype == np.float32 is %s" % str(V.dtype == np.float32));
+            common.DebugPrint("interp2(): V.dtype == float is %s" % str(V.dtype == float));
         """
         if False:
         """
@@ -1743,8 +1745,9 @@ def interp2_OpenCV(V, Xq, Yq, interpolationMethod="linear"):
     Yq_32FC1 = cv.CreateMat(r, c, cv.CV_32FC1);
     cv.Convert(cv.fromarray(Yq), Yq_32FC1);
 
-    common.DebugPrint("interp2(): Xq_32FC1 = %s" % str(ConvertCvMatToNPArray(Xq_32FC1)));
-    common.DebugPrint("interp2(): Yq_32FC1 = %s" % str(ConvertCvMatToNPArray(Yq_32FC1)));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("interp2_OpenCV(): Xq_32FC1 = %s" % str(ConvertCvMatToNPArray(Xq_32FC1)));
+        common.DebugPrint("interp2_OpenCV(): Yq_32FC1 = %s" % str(ConvertCvMatToNPArray(Yq_32FC1)));
 
     """
     From http://docs.opencv.org/modules/imgproc/doc/geometric_transformations.html?highlight=remap#remap
@@ -2045,7 +2048,8 @@ def unique(c2):
         c2i = np.argsort(a=c2, axis=0, kind="quicksort");
         assert len(c2i) == len(c2);
 
-        common.DebugPrint("unique(): c2i = %s" % str(c2i));
+	if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("unique(): c2i = %s" % str(c2i));
         c2i = c2i[:, 0]; # c2i returned is a list of lists of 2 elements: c2i[k][1] is the index of the kth element in c2i
 
     c2i = np.array(c2lSortedIndex);
@@ -2434,7 +2438,8 @@ def gradient(img, spaceX=1, spaceY=1, spaceZ=1):
         #grad[: maxCols, : 1] = row; # Gives exception: "ValueError: output operand requires a reduction, but reduction is not enabled"
         grad[0: 1, 0: maxCols] = row.reshape( (1, row.size) ); #.copy();
 
-        if False:
+        #if False:
+	if common.MY_DEBUG_STDOUT:
             common.DebugPrint("gradientY(): spacing = %s" % str(spacing));
             common.DebugPrint("grad[0: 1, 0: maxCols].shape = %s" % str(grad[0: 1, 0: maxCols].shape));
             common.DebugPrint("row.shape = %s" % str(row.shape));
@@ -2468,7 +2473,8 @@ def gradient(img, spaceX=1, spaceY=1, spaceZ=1):
         Since we know we have a 3D array we work on planes (2d subelements),
             not on 1D elements (rows and columns).
         """
-        common.DebugPrint("Entered gradientZ(indexZ=%d)" % indexZ);
+	if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("Entered gradientZ(indexZ=%d)" % indexZ);
 
         maxRows, maxCols, maxZs = mat.shape;
 
@@ -2479,7 +2485,8 @@ def gradient(img, spaceX=1, spaceY=1, spaceZ=1):
         #grad[0: maxRows, 0: maxCols, 0] = plane; #.reshape( (maxRows, maxCols) ); #plane.reshape( (mat.shape[0], mat.shape[1]) );
         grad[:, :, 0] = plane;
 
-        if False:
+        #if False:
+	if common.MY_DEBUG_STDOUT:
             common.DebugPrint("gradientY(): spacing = %s" % str(spacing));
             common.DebugPrint("grad[0: 1, 0: maxCols].shape = %s" % str(grad[0: 1, 0: maxCols].shape));
             common.DebugPrint("row.shape = %s" % str(row.shape));

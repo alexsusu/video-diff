@@ -379,8 +379,9 @@ def Main(videoPathFileNameQ, videoPathFileNameR):
     #print "cv2._INPUT_ARRAY_GPU_MAT = %s" % str(cv2._INPUT_ARRAY_GPU_MAT)
     #sys.stdout.flush()
 
-    fOutput = open("output.txt", "w")
-    print >>fOutput, "Best match for frames from (input/current) video A w.r.t. reference video B:"
+    if config.USE_EVANGELIDIS_ALGO == False:
+        fOutput = open("output.txt", "w")
+        print >>fOutput, "Best match for frames from (input/current) video A w.r.t. reference video B:"
 
 
     captureQ, frameCountQ, resVideoQ = OpenVideoCapture(videoPathFileNameQ, 0);
@@ -434,7 +435,8 @@ def Main(videoPathFileNameQ, videoPathFileNameR):
     if config.USE_GUI:
         cv2.destroyAllWindows();
 
-    fOutput.close();
+    if not config.USE_EVANGELIDIS_ALGO:
+        fOutput.close();
 
     captureQ.release();
     captureR.release();

@@ -51,7 +51,8 @@ def spatial_consistency(space_xy, qcen, M, st_threshold, cropflag):
             else:
                 ordvot[iii - 1] = bifla;
 
-    common.DebugPrint("ordvot = %s" % str(ordvot));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("ordvot = %s" % str(ordvot));
 
     return ordvot
 

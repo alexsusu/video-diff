@@ -131,7 +131,7 @@ See email Evangelidis, May 7th, 2014:
 """
 # For HD videos with fisheye and ~10% differences in FOV we used levelsECC = 5
 # For 1/4^2 HD videos with fisheye and ~10% differences in FOV we used levelsECC = 2-3
-levelsECC = 5; #1; #2; #4; #1; #%levels of multi-resolution ECC (use 1 normally, more for stronger roto-tranlation if spatial alignment is not good with 1)
+levelsECC = 1; #5; #1; #2; #4; #1; #%levels of multi-resolution ECC (use 1 normally, more for stronger roto-tranlation if spatial alignment is not good with 1)
 
 iterECC = 15; #%iterations of ECC
 #

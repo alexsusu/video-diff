@@ -47,13 +47,14 @@ def IterationStandalone(iWhile):
     captureQ = g.captureQ;
     captureR = g.captureR;
 
-    common.DebugPrint("Entered IterationStandalone(): crossref=%s, captureQ=%s, "\
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("Entered IterationStandalone(): crossref=%s, captureQ=%s, "\
                             "captureR=%s, refined_crossref=%s, warp_p=%s, "
                             "x0=%s, y0=%s, start=%s, t=%d, iWhile=%d." % \
                         (str(crossref), str(captureQ), str(captureR), \
                          str(g.refined_crossref), str(g.warp_p), \
                          str(g.x0), str(g.y0), str(g.start), g.t, iWhile));
-    common.DebugPrint("IterationStandalone(): id(g)=%s" % str(id(g)));
+        common.DebugPrint("IterationStandalone(): id(g)=%s" % str(id(g)));
 
     r_path = captureQ;
     q_path = captureR;
@@ -202,7 +203,8 @@ def IterationStandalone(iWhile):
                 refined_crossref[iWhile, 1] = refined_crossref[iWhile, 1] + \
                                             fit[iWhile].ecc[iterECC0].t;
                                             #fit[iWhile].ecc[0, config.iterECC - 1].t;
-        common.DebugPrint("Exiting IterationStandalone(iWhile=%d)" % iWhile);
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("Exiting IterationStandalone(iWhile=%d)" % iWhile);
     except:
         common.DebugPrintErrorTrace();
 
@@ -327,19 +329,20 @@ def SpatialAlignmentEvangelidis(crossref, captureQ, captureR):
     #% if seq2seq==1:
     #%     pixel_select = 0;
 
-    common.DebugPrint("SpatialAlignmentEvangelidis(): crossref.shape = %s" % \
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("SpatialAlignmentEvangelidis(): crossref.shape = %s" % \
                                                         str(crossref.shape));
-    common.DebugPrint("SpatialAlignmentEvangelidis(): crossref = %s" % str(crossref));
+        common.DebugPrint("SpatialAlignmentEvangelidis(): crossref = %s" % str(crossref));
 
-    common.DebugPrint("SpatialAlignmentEvangelidis(): x0.shape = %s" % str(x0.shape));
-    common.DebugPrint("SpatialAlignmentEvangelidis(): x0 = %s" % str(x0));
+        common.DebugPrint("SpatialAlignmentEvangelidis(): x0.shape = %s" % str(x0.shape));
+        common.DebugPrint("SpatialAlignmentEvangelidis(): x0 = %s" % str(x0));
 
-    common.DebugPrint("SpatialAlignmentEvangelidis(): y0.shape = %s" % str(y0.shape));
-    common.DebugPrint("SpatialAlignmentEvangelidis(): y0 = %s" % str(y0));
+        common.DebugPrint("SpatialAlignmentEvangelidis(): y0.shape = %s" % str(y0.shape));
+        common.DebugPrint("SpatialAlignmentEvangelidis(): y0 = %s" % str(y0));
 
-    common.DebugPrint("SpatialAlignmentEvangelidis(): start.shape = %s" % \
+        common.DebugPrint("SpatialAlignmentEvangelidis(): start.shape = %s" % \
                                                         str(start.shape));
-    common.DebugPrint("SpatialAlignmentEvangelidis(): (used to generate reference " \
+        common.DebugPrint("SpatialAlignmentEvangelidis(): (used to generate reference " \
                                 "frame to read) start = %s" % str(start));
 
     if config.USE_MULTITHREADING == True:
@@ -358,8 +361,9 @@ def SpatialAlignmentEvangelidis(crossref, captureQ, captureR):
         assert config.affine_time == 0;
         assert config.seq2seq == 0;
 
-        common.DebugPrint("SpatialAlignmentEvangelidis(): id(g)=%s" % str(id(g)));
-        common.DebugPrint("SpatialAlignmentEvangelidis(): g.crossref=%s, " \
+	if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("SpatialAlignmentEvangelidis(): id(g)=%s" % str(id(g)));
+            common.DebugPrint("SpatialAlignmentEvangelidis(): g.crossref=%s, " \
                                     "g.captureQ=%s, g.captureR=%s." % \
                                     (g.crossref, g.captureQ, g.captureR));
         """

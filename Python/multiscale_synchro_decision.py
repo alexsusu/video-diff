@@ -1,3 +1,5 @@
+# !!!!TODO: maybe takeout PRINT_MATRICES - it's being replaced with common.MY_DEBUG_STDOUT (I think)
+
 import common
 import config
 import Matlab
@@ -301,7 +303,8 @@ def causal(Vspace, H, numFramesQ, numFramesR, BOV_flag, cropflag, const_type, no
 
     # Normally BOV_flag=0, cropflag=0, const_type=1,nop=0
 
-    if True:
+    #if True:
+    if common.MY_DEBUG_STDOUT:
         print("causal(): Vspace.shape = %s" % str(Vspace.shape));
         print("causal(): H.shape = %s" % str(H.shape));
 
@@ -497,10 +500,11 @@ def causal(Vspace, H, numFramesQ, numFramesR, BOV_flag, cropflag, const_type, no
             #V += w[i - 1] * Vspace[:, :, i - 1] + H[:, :, i - 1]; #!!!!TODO: think well *
             V += w[i] * Vspace[:, :, i] + H[:, :, i]; #!!!!TODO: think well *
 
-    #common.DebugPrint("causal(): Vspace.shape = %s" % str(Vspace.shape));
-    common.DebugPrint("causal(): V.shape = %s" % str(V.shape));
-    common.DebugPrint("causal(): V (the matrix used to choose the max-voting reference frame) = %s" % str(V));
-    #common.DebugPrint("causal(): len(QD) = %d" % len(QD));
+    if common.MY_DEBUG_STDOUT:
+        #common.DebugPrint("causal(): Vspace.shape = %s" % str(Vspace.shape));
+        common.DebugPrint("causal(): V.shape = %s" % str(V.shape));
+        common.DebugPrint("causal(): V (the matrix used to choose the max-voting reference frame) = %s" % str(V));
+        #common.DebugPrint("causal(): len(QD) = %d" % len(QD));
 
     #for iFor in range(1, len(QD) + 1):
     """
@@ -610,7 +614,8 @@ def dp3(Vspace, numFramesR, numFramesQ, BOV_flag):
     #% 2010, Georgios Evangelidis <georgios.evangelidis@iais.fraunhofer.de>
 
     print("Entered dp3(): Running dynamic programming...");
-    common.DebugPrint("dp3(): Vspace = %s" % str(Vspace));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("dp3(): Vspace = %s" % str(Vspace));
 
     #tic
 
@@ -699,7 +704,8 @@ def dp3(Vspace, numFramesR, numFramesQ, BOV_flag):
     #Tback = zeros(r+1,c+1);
     Tback = np.zeros( (r + 1, c + 1) );
 
-    if True:
+    #if True:
+    if common.MY_DEBUG_STDOUT:
         common.DebugPrint("dp3(): printing locally optimum solutions:");
         # Alex: trying out to find a better solution than dp3() !!!!TODO : more
         # This solution is basically the one returned by causal() IF we do NOT apply Matlab.filter2() on Vspace
@@ -793,8 +799,9 @@ def dp3(Vspace, numFramesR, numFramesQ, BOV_flag):
                 #[dmax, tb] = max([D(i,j), D(i,j+1), D(i+1,j)]);
                 dmax, tb = Matlab.max( \
                         np.array([D[i - 1, j - 1], D[i - 1, j], D[i, j - 1]]));
-                common.DebugPrint("dp3(): dmax = %s" % str(dmax));
-                common.DebugPrint("dp3(): tb = %s" % str(tb));
+                if common.MY_DEBUG_STDOUT:
+                    common.DebugPrint("dp3(): dmax = %s" % str(dmax));
+                    common.DebugPrint("dp3(): tb = %s" % str(tb));
 
             #D(i+1,j+1) = D(i+1,j+1)+dmax;
             if NEW_DP3_ALEX:
@@ -805,11 +812,12 @@ def dp3(Vspace, numFramesR, numFramesQ, BOV_flag):
             #Tback(i+1,j+1) = tb;
             Tback[i, j] = tb;
 
-    common.DebugPrint("dp3(): D.shape = %s" % str(D.shape));
-    common.DebugPrint("dp3(): D = %s" % str(D));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("dp3(): D.shape = %s" % str(D.shape));
+        common.DebugPrint("dp3(): D = %s" % str(D));
 
-    common.DebugPrint("dp3(): Tback.shape = %s" % str(Tback.shape));
-    common.DebugPrint("dp3(): Tback = %s" % str(Tback));
+        common.DebugPrint("dp3(): Tback.shape = %s" % str(Tback.shape));
+        common.DebugPrint("dp3(): Tback = %s" % str(Tback));
 
     #% Traceback
     i = r + 1;
@@ -849,20 +857,23 @@ def dp3(Vspace, numFramesR, numFramesQ, BOV_flag):
         #NOT GOOD: x = np.c_[j, x];
         x = np.hstack([j - 1, x]);
 
-    common.DebugPrint("dp3(): before D.shape = %s" % str(D.shape));
-    common.DebugPrint("dp3(): before D = %s" % str(D));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("dp3(): before D.shape = %s" % str(D.shape));
+        common.DebugPrint("dp3(): before D = %s" % str(D));
 
     #% Strip off the edges of the D matrix before returning
     #D = D(2:(r+1),2:(c+1));
     D = D[1: (r + 1), 1: (c + 1)];
 
-    common.DebugPrint("dp3(): D.shape = %s" % str(D.shape));
-    common.DebugPrint("dp3(): D = %s" % str(D));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("dp3(): D.shape = %s" % str(D.shape));
+        common.DebugPrint("dp3(): D = %s" % str(D));
 
     #RD_start=str2num(RD(1).name(end-9:end-4));
     RD_start = 1;
 
-    common.DebugPrint("dp3(): Vspace.shape = %s" % str(Vspace.shape));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("dp3(): Vspace.shape = %s" % str(Vspace.shape));
 
     #!!!!TODO: understand well what is x,y and why computes p
     #for i=1:size(Vspace,2):
@@ -874,12 +885,13 @@ def dp3(Vspace, numFramesR, numFramesQ, BOV_flag):
         p = np.nonzero(x == i);
         p = p[0];
 
-        common.DebugPrint("dp3(): x.shape = %s" % str(x.shape));
-        common.DebugPrint("dp3(): x = %s" % str(x));
-        common.DebugPrint("dp3(): y.shape = %s" % str(y.shape));
-        common.DebugPrint("dp3(): y = %s" % str(y));
-        common.DebugPrint("dp3(): i = %s" % str(i));
-        common.DebugPrint("dp3(): p = %s" % str(p));
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("dp3(): x.shape = %s" % str(x.shape));
+            common.DebugPrint("dp3(): x = %s" % str(x));
+            common.DebugPrint("dp3(): y.shape = %s" % str(y.shape));
+            common.DebugPrint("dp3(): y = %s" % str(y));
+            common.DebugPrint("dp3(): i = %s" % str(i));
+            common.DebugPrint("dp3(): p = %s" % str(p));
 
         #if isempty(p)
         if p.size == 0:
@@ -887,14 +899,16 @@ def dp3(Vspace, numFramesR, numFramesQ, BOV_flag):
             #temp=3;
             temp = 0;
 
-            common.DebugPrint("dp3(): temp = %s" % str(temp));
+	    if common.MY_DEBUG_STDOUT:
+                common.DebugPrint("dp3(): temp = %s" % str(temp));
 
             crossref[i, 1] = 0 + RD_start - 1;
         else:
             #temp=y(p);
             temp = y[p];
 
-            common.DebugPrint("dp3(): temp = %s" % str(temp));
+	    if common.MY_DEBUG_STDOUT:
+                common.DebugPrint("dp3(): temp = %s" % str(temp));
 
             #cross(i,2)=temp(end)+RD_start-1;
             if temp.size == 1:
@@ -974,7 +988,7 @@ def dp_Alex(Vspace, numFramesR, numFramesQ, BOV_flag, PREV_REF=5, NEXT_REF=0):
     #PRINT_MATRICES = False;
 
     #print("VV[:100, :100] = %s" % str(VV[:100, :100]));
-    if PRINT_MATRICES:
+    if common.MY_DEBUG_STDOUT and PRINT_MATRICES:
         print("dp_Alex(): r = %d, c = %d" % (r, c));
         print("dp_Alex(): VV = \n%s" % str(VV));
         sys.stdout.flush();
@@ -1031,7 +1045,7 @@ def dp_Alex(Vspace, numFramesR, numFramesQ, BOV_flag, PREV_REF=5, NEXT_REF=0):
             elif (qry == c - 1):
             """
 
-    if PRINT_MATRICES:
+    if common.MY_DEBUG_STDOUT and PRINT_MATRICES:
         print("D = \n%s" % str(D));
         print("Tback = \n%s" % str(Tback));
 
@@ -1056,12 +1070,12 @@ def dp_Alex(Vspace, numFramesR, numFramesQ, BOV_flag, PREV_REF=5, NEXT_REF=0):
         crossref[qry][0] = qry;
         crossref[qry][1] = posRef;
 
-        print("qry=%d, posRef=%d" % (qry, posRef));
+        common.DebugPrint("qry=%d, posRef=%d" % (qry, posRef));
         posRef = Tback[posRef, qry];
 
     #!!!!time took
     #common.DebugPrint("dp_Alex(): crossref = %s" % str(crossref));
-    print("dp_Alex(): crossref = %s" % str(crossref));
+    common.DebugPrint("dp_Alex(): crossref = %s" % str(crossref));
 
     #ComputeCost(crossref, VV);
     ComputeCost(crossref, VV, "crossref_dp_Alex.txt");

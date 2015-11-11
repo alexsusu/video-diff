@@ -1,4 +1,6 @@
 """
+Multi-resolution ECC - useful if the videos have wide-angle (fisheye) lense distortion.
+
 NOTE: running ecc_homo_spacetime() on the same inputs results in the same output
     images (so, if saving .PNG files with the same parameters,
     they should be the same).
@@ -462,7 +464,7 @@ def hessian(VI_dW_dp, N_p, w):
 def hessian_scipy(VI_dW_dp, N_p, w):
     if common.MY_DEBUG_STDOUT:
         common.DebugPrint("Entered hessian_scipy(N_p=%s)." % str(N_p));
-    print("hessian_scipy(VI_dW_dp.shape=%s, N_p=%d, w=%d)." % \
+        print("hessian_scipy(VI_dW_dp.shape=%s, N_p=%d, w=%d)." % \
                         (str(VI_dW_dp.shape), N_p, w));
 
     #if size(VI_dW_dp,2)~=(N_p*w)
@@ -496,9 +498,10 @@ def hessian_scipy(VI_dW_dp, N_p, w):
         A synonym for PyArray_DESCR, named to be consistent with the .dtype. usage within Python.
     """
 
-    common.DebugPrint("hessian_scipy(): VI_dW_dp.strides = %s" % str(VI_dW_dp.strides));
-    common.DebugPrint("hessian_scipy(): VI_dW_dp.shape = %s" % str(VI_dW_dp.shape));
-    common.DebugPrint("hessian_scipy(): VI_dW_dp.dtype = %s" % str(VI_dW_dp.dtype));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("hessian_scipy(): VI_dW_dp.strides = %s" % str(VI_dW_dp.strides));
+        common.DebugPrint("hessian_scipy(): VI_dW_dp.shape = %s" % str(VI_dW_dp.shape));
+        common.DebugPrint("hessian_scipy(): VI_dW_dp.dtype = %s" % str(VI_dW_dp.dtype));
 
     assert (VI_dW_dp.dtype == np.float32) or (VI_dW_dp.dtype == np.float64); #np.int64;
 
@@ -611,7 +614,8 @@ def hessian_scipy(VI_dW_dp, N_p, w):
     #common.DebugPrint("res[1, 0] = %d" % res[1, 0]);
     #common.DebugPrint("\n\nres = %s" % str(res));
 
-    print("hessian2(): H = %s" % str(H));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("hessian2(): H = %s" % str(H));
 
     # res is H
     return H;
@@ -1003,8 +1007,9 @@ registration implementation as
 """
 #function dW_dp = jacobian_h(nx, ny, warp_p,time_extention_flag,pixel_select)
 def jacobian_h(nx, ny, warp_p, time_extension_flag, pixel_select):
-    #if common.MY_DEBUG_STDOUT:
-    print( \
+    if common.MY_DEBUG_STDOUT:
+        #common.DebugPrint( \
+	print( \
             "Entered jacobian_h(nx.shape=%s, ny.shape=%s, warp_p.shape=%s, " \
                                 "time_extension_flag=%d, pixel_select=%d)" % \
                             (str(nx.shape), str(ny.shape), str(warp_p.shape), \
@@ -1191,8 +1196,8 @@ def jacobian_h(nx, ny, warp_p, time_extension_flag, pixel_select):
         #%                  j_z,j_z,j_z,j_z,j_z,j_z,j_z,j_z,j_ones];
         #%      end
 
-    print("jacobian_h(): dW_dp.shape = %s" % str(dW_dp.shape));
     if common.MY_DEBUG_STDOUT:
+        print("jacobian_h(): dW_dp.shape = %s" % str(dW_dp.shape));
         common.DebugPrint( \
             "jacobian_h(): dW_dp[:10, :10] = %s" % str(dW_dp[:10, :10]));
         common.DebugPrint( \
@@ -1540,7 +1545,8 @@ def weights_for_ecc(a, b, grid, nonze):
             "weights_for_ecc(): ze.shape = %s" % str(ze.shape));
 
     #if True:
-    if False:
+    #if False:
+    if common.MY_DEBUG_STDOUT:
         # TOO BIG:
         common.DebugPrint("weights_for_ecc(): nonze = %s" % str(nonze));
         common.DebugPrint("weights_for_ecc(): ze = %s" % str(ze));
@@ -1939,12 +1945,14 @@ def ecc_homo_spacetime(img_index, tmplt_index, p_init, t0, n_iters, levels, \
     #tmplt1=double(imread([q_path num2str(tmplt_index,'%.6d') imformat]));
     tmplt[1] = MyImageRead(q_capture, tmplt_index);
 
-    #common.DebugPrint("ecc_homo_spacetime(): tmplt[1].shape (returned by MyImageRead) = %s" % \
-    #                                        str(tmplt[1].shape));
-    #common.DebugPrint("ecc_homo_spacetime(): tmplt[1].dtype (returned by MyImageRead) = %s" % \
-    #                                        str(tmplt[1].dtype));
-    #common.DebugPrint("ecc_homo_spacetime(): tmplt[1][:10, :10] = %s" % \
-    #                    str(tmplt[1][:10, :10]));
+    """
+    common.DebugPrint("ecc_homo_spacetime(): tmplt[1].shape (returned by MyImageRead) = %s" % \
+                                            str(tmplt[1].shape));
+    common.DebugPrint("ecc_homo_spacetime(): tmplt[1].dtype (returned by MyImageRead) = %s" % \
+                                            str(tmplt[1].dtype));
+    common.DebugPrint("ecc_homo_spacetime(): tmplt[1][:10, :10] = %s" % \
+                        str(tmplt[1][:10, :10]));
+    """
 
     # We read the reference frame numbered img_index:
     #image_temp = imread([r_path num2str(img_index,'%.6d') imformat]);

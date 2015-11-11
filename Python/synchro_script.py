@@ -342,7 +342,8 @@ def ComputeHarlocs(capture, counterStep, folderName, fileNamePrefix,
 
         ret, img = capture.read();
 
-        common.DebugPrint("ComputeHarlocs(): img = %s" % str(img));
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("ComputeHarlocs(): img = %s" % str(img));
 
         if False and config.SAVE_FRAMES:
             fileName = config.IMAGES_FOLDER + "/img_%05d.png" % counter;
@@ -398,7 +399,8 @@ def ComputeHarlocs(capture, counterStep, folderName, fileNamePrefix,
             multi_scale_harris.StoreMultiScaleHarrisFeatures(
                     harlocsFolder + "/" + fileNamePrefix + "%05d.txt" % i, h);
 
-    if False:
+    #if False:
+    if common.MY_DEBUG_STDOUT:
         common.DebugPrint("ComputeHarlocs(): harlocs = %s" % str(harlocs));
 
     return harlocs;
@@ -515,13 +517,14 @@ def QuadTreeDecision():
                 Votes_space[:, :, s - 1] = Votes_space_res;
                 H[:, :, s - 1] = H_res;
 
-                common.DebugPrint("QuadTreeDecision(): For scale %d: " \
-                    "Votes_space_res = %s,\n      H_res = %s" % \
-                    (s, str(Votes_space_res), str(H_res)));
+                if common.MY_DEBUG_STDOUT:
+                    common.DebugPrint("QuadTreeDecision(): For scale %d: " \
+                        "Votes_space_res = %s,\n      H_res = %s" % \
+                        (s, str(Votes_space_res), str(H_res)));
 
-                common.DebugPrint("QuadTreeDecision(): For scale %d: " \
-                    "Votes_space_res.shape = %s,\n      H_res.shape = %s" % \
-                    (s, str(Votes_space_res.shape), str(H_res.shape)));
+                    common.DebugPrint("QuadTreeDecision(): For scale %d: " \
+                        "Votes_space_res.shape = %s,\n      H_res.shape = %s" % \
+                        (s, str(Votes_space_res.shape), str(H_res.shape)));
                 #quit();
                 #kdtree_delete(tree); # TODO: think if want to delete kdtree
                 if config.KDTREE_IMPLEMENTATION == 1:
@@ -532,9 +535,11 @@ def QuadTreeDecision():
                               "since we finished preprocessing the reference video");
             common.DebugPrint("QuadTreeDecision(): time before exit = %s" % \
                     common.GetCurrentDateTimeStringWithMilliseconds());
-            quit();
+	    return None;
+            #quit();
 
-        common.DebugPrint("QuadTreeDecision(): Before multiscale_synchro_decision(): " \
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("QuadTreeDecision(): Before multiscale_synchro_decision(): " \
                 "Votes_space = %s,\n      H = %s" % (str(Votes_space), str(H)));
 
         try:
@@ -607,7 +612,7 @@ def TemporalAlignment(captureQ, captureR):
 
     totalT1 = float(cv2.getTickCount());
 
-    #if config.PREPROCESS_REFERENCE_VIDEO_ONLY == True: # This will give error in multiscale_quad_retrieval
+    #if config.PREPROCESS_REFERENCE_VIDEO_ONLY == True: # This will give error in multiscale_quad_retrieval since we need to load the saved Harris features anyhow
     if True:
         # We compute and Store in files the multi-scale Harris features of the reference video
         """
@@ -619,12 +624,13 @@ def TemporalAlignment(captureQ, captureR):
                             fileNamePrefix=config.HARRIS_FILENAME_PREFIX, \
                             fileNameExtension=config.HARRIS_FILENAME_EXTENSION,
                             indexVideo=1);
-        common.DebugPrint("TemporalAlignment(): len(harlocsR) = %s" % str(len(harlocsR)));
-        sumNbytes = 0;
-        for hr in harlocsR:
-            sumNbytes += hr.nbytes;
-        common.DebugPrint("TemporalAlignment(): harlocsR.nbytes = %s" % str(sumNbytes));
-        #common.DebugPrint("TemporalAlignment(): harlocsR.nbytes = %s" % str(harlocsR.nbytes));
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("TemporalAlignment(): len(harlocsR) = %s" % str(len(harlocsR)));
+            sumNbytes = 0;
+            for hr in harlocsR:
+                sumNbytes += hr.nbytes;
+            common.DebugPrint("TemporalAlignment(): harlocsR.nbytes = %s" % str(sumNbytes));
+            #common.DebugPrint("TemporalAlignment(): harlocsR.nbytes = %s" % str(harlocsR.nbytes));
 
 
     if config.PREPROCESS_REFERENCE_VIDEO_ONLY == False:
@@ -638,15 +644,18 @@ def TemporalAlignment(captureQ, captureR):
                             fileNamePrefix=config.HARRIS_FILENAME_PREFIX, \
                             fileNameExtension=config.HARRIS_FILENAME_EXTENSION,
                             indexVideo=0);
-        common.DebugPrint("TemporalAlignment(): len(harlocsQ) = %s" % \
-                            str(len(harlocsQ)));
-        sumNbytes = 0;
-        for hq in harlocsQ:
-            sumNbytes += hq.nbytes;
-        common.DebugPrint("TemporalAlignment(): harlocsQ.nbytes = %s" % str(sumNbytes));
+	if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("TemporalAlignment(): len(harlocsQ) = %s" % \
+                                str(len(harlocsQ)));
+            sumNbytes = 0;
+            for hq in harlocsQ:
+                sumNbytes += hq.nbytes;
+            common.DebugPrint("TemporalAlignment(): harlocsQ.nbytes = %s" % str(sumNbytes));
 
-    #res = QuadTreeDecision(captureQ, captureR);
-    res = QuadTreeDecision();
+        #res = QuadTreeDecision(captureQ, captureR);
+        res = QuadTreeDecision();
+    else:
+	res = None
 
     totalT2 = float(cv2.getTickCount());
     myTime = (totalT2 - totalT1) / cv2.getTickFrequency();

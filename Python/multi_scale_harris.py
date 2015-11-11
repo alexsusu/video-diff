@@ -7,6 +7,7 @@ import Matlab
 import numpy as np
 import math
 
+import sys
 import unittest
 
 
@@ -230,7 +231,7 @@ def multi_scale_harris(im, nos, disp):
             common.DebugPrint("multi_scale_harris(): ks = %s" % (str(ks)));
             common.DebugPrint("multi_scale_harris(): sd^2 = %s" % (str(sd*sd)));
 
-            #feature_params["minDistance"] = 5 - (i / 2);
+            #feature_params["minDistance"] = 5 - (i / 2); // i is the scale in use
             # The corners with the minimal eigenvalue less than \texttt{qualityLevel} \cdot \max_{x,y} qualityMeasureMap(x,y) are rejected.
             # This is the threshold used in non-maximal supression.
             feature_params["qualityLevel"] = 0.001 * scn[i]; # * 30;
@@ -281,7 +282,17 @@ def multi_scale_harris(im, nos, disp):
               "The function finds the most prominent corners in the image or in
                 the specified image region, as described in [Shi94]"
             """
-            pointsAux = cv2.goodFeaturesToTrack(imScaled, **feature_params);
+            #pointsAux = cv2.goodFeaturesToTrack(imScaled, **feature_params);
+            pointsAux = cv2.goodFeaturesToTrack(imScaled, maxCorners=3600, #1000,
+                                                qualityLevel=0.01,
+                                                #qualityLevel=0.001 * scn[i], # * 30;
+                                                minDistance=5, #9, #7, #~195 points, #6, #~210 points #3, #~300 points, #4, #~100 points, #5,#~85 Harris points found #8, ~45 found
+                                                blockSize=ks, #19,
+                                                useHarrisDetector=True,
+                                                k=0.06);
+                                                # The corners with the minimal eigenvalue less than \texttt{qualityLevel} \cdot \max_{x,y} qualityMeasureMap(x,y) are rejected.
+                                                # This is the threshold used in non-maximal supression.
+                                                #feature_params["minDistance"]=0.0); #100; (Returns very few points)
         else:
             # Inspired from https://stackoverflow.com/questions/18255958/harris-corner-detection-and-localization-in-opencv-with-python
 
@@ -361,6 +372,27 @@ def multi_scale_harris(im, nos, disp):
         #common.DebugPrint("multi_scale_harris(): pointsAux = %s" % str(pointsAux));
         for p in pointsAux:
             points.append((p[0][0] * float(im_w)/imScaled_w, p[0][1] * float(im_h)/imScaled_h, i + 1));
+            #points.append((p[0] * float(im_w)/imScaled_w, p[1] * float(im_h)/imScaled_h, i + 1));
+        sys.stdout.flush();
+
+        # Sort the points after 2nd element first and then the 1st element:
+        def CmpFunc(x, y):
+            #return x - y
+            if x[1] > y[1]:
+                return 1
+            elif x[1] < y[1]:
+                return -1
+            else: #(x[1] == y[1]):
+                if (x[0] > y[0]):
+                    return 1
+                elif (x[0] < y[0]):
+                    return -1
+                else:
+                    return 0
+
+            return 0
+        points.sort(cmp=CmpFunc);
+
 
         if False:
             # We work on the Gaussian pyramid
@@ -455,7 +487,8 @@ def my_nms(cim, radius, thresh):
     #%% This modification runs 4x faster (11 secs less in a 6-scale approach)
     #mx = ordfilt2(cim,sze^2,ones(sze)); #% Grey-scale dilate.
     mx = Matlab.ordfilt2(cim, pow(sze, 2), np.ones((sze, sze))); #% Grey-scale dilate.
-    common.DebugPrint("my_nms(): mx = %s" % str(mx));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("my_nms(): mx = %s" % str(mx));
 
     #% mx=my_max_filter(cim,[sze,sze]); %my mex-file for max-filter
 
@@ -511,9 +544,10 @@ def my_nms(cim, radius, thresh):
             w = 1;         #% Width that we look out on each side of the feature
             #% point to fit a local parabola
 
-            common.DebugPrint("my_nms(): ind.shape = %s" % str(ind.shape));
-            common.DebugPrint("my_nms(): ind = %s" % str(ind));
-            common.DebugPrint("my_nms(): ind - w = %s" % str(ind - w));
+            if common.MY_DEBUG_STDOUT:
+                common.DebugPrint("my_nms(): ind.shape = %s" % str(ind.shape));
+                common.DebugPrint("my_nms(): ind = %s" % str(ind));
+                common.DebugPrint("my_nms(): ind - w = %s" % str(ind - w));
 
             # Don't forget that we are now in column major ('F'/Fortran) order
 
@@ -665,9 +699,10 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
             mRange = range(-(r_w + 1), r_w + 2);
             xco, yco = Matlab.meshgrid(mRange, mRange);
 
-        common.DebugPrint("multi_scale_harris_Evangelidis(): xco = %s" % \
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("multi_scale_harris_Evangelidis(): xco = %s" % \
                                                                     str(xco));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): yco = %s" % \
+            common.DebugPrint("multi_scale_harris_Evangelidis(): yco = %s" % \
                                                                     str(yco));
 
         # Note: even for HD frames, xco.shape = (11, 11) (yco the same)
@@ -676,7 +711,8 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
         #arg = -(xco * xco + yco * yco) / (2.0 * sd * sd);
         arg = -(xco ** 2 + yco ** 2) / (2.0 * sd * sd);
 
-        common.DebugPrint("multi_scale_harris_Evangelidis(): arg = %s" % \
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("multi_scale_harris_Evangelidis(): arg = %s" % \
                                                                     str(arg));
 
         #%2d gaussian kernel
@@ -687,7 +723,8 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
         #g=exp(arg)/(2*pi*sd^2); #2d gaussian kernel
         g = np.exp(arg) / (2.0 * math.pi * pow(sd, 2));
 
-        common.DebugPrint("multi_scale_harris_Evangelidis(): g = %s" % \
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("multi_scale_harris_Evangelidis(): g = %s" % \
                                                                     str(g));
 
         # normalize to suppress any gain
@@ -699,8 +736,9 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
             #g = g / float(g.sum());
             g /= float(g_sum);
 
-        common.DebugPrint("multi_scale_harris_Evangelidis(): sd = %s" % str(sd));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): w = %s" % str(w));
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("multi_scale_harris_Evangelidis(): sd = %s" % str(sd));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): w = %s" % str(w));
 
         """
         #%Instead of computing derivatives in the filtered image,
@@ -711,13 +749,13 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
         #gx=-xco.*g/(sd*sd);
         gx = -xco * g / float(sd * sd);
 
-        common.DebugPrint("multi_scale_harris_Evangelidis(): gx = %s" % \
-                                                                    str(gx));
-
         #gy=-yco.*g/(sd*sd);
         gy = -yco * g / float(sd * sd);
 
-        common.DebugPrint("multi_scale_harris_Evangelidis(): gy = %s" % \
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("multi_scale_harris_Evangelidis(): gx = %s" % \
+                                                                    str(gx));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): gy = %s" % \
                                                                     str(gy));
 
         """
@@ -743,7 +781,8 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
         Iy = Matlab.imfilter(im, gy, "replicate");
         #% Alex: Ix and Iy have the same size as im
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("multi_scale_harris_Evangelidis(): Ix = %s" % \
                                                                     str(Ix));
             common.DebugPrint("multi_scale_harris_Evangelidis(): Iy = %s" % \
@@ -758,7 +797,8 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
             #gi = fspecial('ga',max(1,fix(6*si)+1), si)
             gi = Matlab.fspecial("ga", max(1, Matlab.fix(6 * si) + 1), si);
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("multi_scale_harris_Evangelidis(): gi = %s" % \
                                                                     str(gi));
         common.DebugPrint("multi_scale_harris_Evangelidis(): gi.shape = %s" % \
@@ -774,7 +814,8 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
         Ixy = Matlab.imfilter(Ix * Iy, gi, "replicate");
         #% Alex: Ix2, Iy2 and Ixy have the same size as im
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("multi_scale_harris_Evangelidis(): Ix2 = %s" % \
                                                                     str(Ix2));
             common.DebugPrint("multi_scale_harris_Evangelidis(): Iy2 = %s" % \
@@ -797,9 +838,10 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
         #M = (Ix2.*Iy2 - Ixy.^2) - .06*(Ix2 + Iy2).^2;
         M = (Ix2 * Iy2 - Ixy ** 2) - 0.06 * (Ix2 + Iy2) ** 2;
 
-        common.DebugPrint("multi_scale_harris_Evangelidis(): M.dtype = %s" % \
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("multi_scale_harris_Evangelidis(): M.dtype = %s" % \
                           str(M.dtype));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): M = %s" % \
+            common.DebugPrint("multi_scale_harris_Evangelidis(): M = %s" % \
                                                                 str(M));
 
         #% Alex: scn is a vector - see definition above
@@ -822,14 +864,15 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
         #[r,c, rsubp, csubp] = my_nms(M, round(3*si/2), thresh);
         r, c, rsubp, csubp = my_nms(M, round(3 * si / 2.0), thresh);
 
-        common.DebugPrint("multi_scale_harris_Evangelidis(): r.shape = %s" % str(r.shape));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): r = %s" % str(r));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): c.shape = %s" % str(c.shape));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): c = %s" % str(c));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): rsubp.shape = %s" % str(rsubp.shape));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): rsubp = %s" % str(rsubp));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): csubp.shape = %s" % str(csubp.shape));
-        common.DebugPrint("multi_scale_harris_Evangelidis(): csubp = %s" % str(csubp));
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("multi_scale_harris_Evangelidis(): r.shape = %s" % str(r.shape));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): r = %s" % str(r));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): c.shape = %s" % str(c.shape));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): c = %s" % str(c));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): rsubp.shape = %s" % str(rsubp.shape));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): rsubp = %s" % str(rsubp));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): csubp.shape = %s" % str(csubp.shape));
+            common.DebugPrint("multi_scale_harris_Evangelidis(): csubp = %s" % str(csubp));
 
         #% Alex: r,c, rsubp, csubp seem to always be the same size - and the
         #%          size I've seen is 56 * 1????
@@ -860,7 +903,8 @@ def multi_scale_harris_Evangelidis(im, nos, disp):
             plot(points(i,2),points(i,1),'r+')
         """
 
-    common.DebugPrint("multi_scale_harris_Evangelidis(): points = %s" % str(points));
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("multi_scale_harris_Evangelidis(): points = %s" % str(points));
     common.DebugPrint("multi_scale_harris_Evangelidis(): points.shape = %s" % str(points.shape));
 
     tMSH2 = float(cv2.getTickCount());

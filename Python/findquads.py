@@ -9,6 +9,13 @@ More exactly, we generate quads (quads points) for each point
         max-distance >= threshold.
     Then we generate hashes of 4 floats from the coordinates of these quads
                 points.
+
+Note: because we use a lot of DebugPrint() calls, the evaluated arguments
+    slow down considerably the performance of the findquads() function,
+    independently of the value of common.MY_DEBUG_STDOUT.
+    Reason: we print a lot of rather big arrays/matrices.
+  Therefore, we guard the evaluation of these DebugPrint() calls with
+    conditional: if common.MY_DEBUG_STDOUT .
 """
 
 import common
@@ -39,12 +46,14 @@ if Points is np.array
 
 # Used by multiscale_quad_tree.m, used by synchro....m
 
+# Alex: determine quads for the given Harris points, for a given scale, for a given video frame
 #function [Quads, Centroids, maxDistances, Orientation]=findquads(Points,threshold,reflect_flag)
 def findquads(Points, threshold, reflect_flag):
     t1 = float(cv2.getTickCount())
 
     """
     Alex: Points contains M 2D points.
+          More exactly, Points is a list of Harris features for the current (reference of query) video frame, for a given scale.
         We find the quadruples that are valid (when
             the distance between the most-widely separated points within a
             quadruple is below the scalar threshold).
@@ -106,8 +115,9 @@ def findquads(Points, threshold, reflect_flag):
     """
 
     # if False:
-    common.DebugPrint("findquads(): Points = %s" % str(Points))
-    common.DebugPrint("findquads(): Points.shape = %s" % str(Points.shape))
+    if common.MY_DEBUG_STDOUT:
+        common.DebugPrint("findquads(): Points = %s" % str(Points))
+        common.DebugPrint("findquads(): Points.shape = %s" % str(Points.shape))
 
     #if size(Points, 2) != 2:
     if Points.shape[1] != 2:
@@ -129,6 +139,7 @@ def findquads(Points, threshold, reflect_flag):
             #!!!!TODO: try to use exact NN-search for the kd-tree - see http://docs.opencv.org/trunk/modules/flann/doc/flann_fast_approximate_nearest_neighbor_search.html
             mytree = cv2.flann_Index(features=locs, params=config.FLANN_PARAMS);
 
+        # Alex: locs is a list of Harris features for a video frame
         #for i=1:numel(locs(:,1))
         for i in range(locs.shape[0]):
             #idx, dists = kdtree_k_nearest_neighbors(mytree, locs[i - 1, :], 4);
@@ -164,7 +175,8 @@ def findquads(Points, threshold, reflect_flag):
             """
 
             #if False:
-            if True:
+            #if True:
+            if common.MY_DEBUG_STDOUT:
                 common.DebugPrint("findquads(): dists = %s" % dists);
                 common.DebugPrint("findquads(): idx = %s" % idx);
                 #pass;
@@ -258,7 +270,8 @@ def findquads(Points, threshold, reflect_flag):
         dis2 = distance[index, :];
         c2 = centro[index, :];
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): out2.shape = %s" % str(out2.shape))
             common.DebugPrint("findquads(): out2 = %s" % str(out2))
             common.DebugPrint("findquads(): dis2.shape = %s" % str(dis2.shape))
@@ -289,7 +302,8 @@ def findquads(Points, threshold, reflect_flag):
                     npla.norm(out2[i, 2: 4] - out2[i, 6: 8]),
                     npla.norm(out2[i, 4: 6] - out2[i, 6: 8]) ) );
 
-            if False:
+            #if False:
+            if common.MY_DEBUG_STDOUT:
                 #common.DebugPrint("findquads(): out2[i] = %s" % str(out2[i]));
                 #common.DebugPrint("findquads(): out2[i, 2:4] = %s" % str(out2[i, 2:4]));
                 #common.DebugPrint("findquads(): out2[i, 4:6] = %s" % str(out2[i, 4:6]));
@@ -298,7 +312,8 @@ def findquads(Points, threshold, reflect_flag):
                     "out2[i, 4:6] = %s" % str(npla.norm(out2[i, 2:4] - out2[i, 4:6])));
                 """
                 pass;
-            if False:
+            #if False:
+            if common.MY_DEBUG_STDOUT:
                 common.DebugPrint("findquads(): d**2 = %s" % str(d**2));
             #common.DebugPrint("findquads(): d = %s" % str(d));
 
@@ -342,7 +357,8 @@ def findquads(Points, threshold, reflect_flag):
         ind10 = ind10.astype(int);
         ind10 = np.ravel(ind10); #.flatten() #reshape(1, 0)
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): ind10 = %s" % str(ind10));
             #common.DebugPrint("findquads(): max_dis2**2 = %s" % str(max_dis2**2));
             common.DebugPrint("findquads(): max_dis2 = %s" % str(max_dis2));
@@ -380,7 +396,8 @@ def findquads(Points, threshold, reflect_flag):
             Orientation = ori;
             """
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): c2 = %s" % str(c2));
             common.DebugPrint("findquads(): out2.shape = %s" % str(out2.shape));
             common.DebugPrint("findquads(): out2 = %s" % str(out2));
@@ -409,7 +426,8 @@ def findquads(Points, threshold, reflect_flag):
         #oy=oy-repmat(oy[:,1],1,4);
         oy = oy - np.tile(oy[:, 0], (4, 1)).T;
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): ox.shape = %s" % str(ox.shape));
             common.DebugPrint("findquads(): ox = %s" % str(ox));
             common.DebugPrint("findquads(): oy.shape = %s" % str(oy.shape));
@@ -434,7 +452,8 @@ def findquads(Points, threshold, reflect_flag):
         theta = math.pi / 4.0 - alpha;
         ori = alpha;
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): alpha.shape = %s" % str(alpha.shape))
             common.DebugPrint("findquads(): alpha = %s" % str(alpha))
             common.DebugPrint("findquads(): theta.shape = %s" % str(theta.shape))
@@ -452,7 +471,8 @@ def findquads(Points, threshold, reflect_flag):
 
         #common.DebugPrint("findquads(): ox.shape = %s" % str(ox.shape));
         #common.DebugPrint("findquads(): oy.shape = %s" % str(oy.shape));
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): matcos.shape = %s" % str(matcos.shape));
             common.DebugPrint("findquads(): matcos = %s" % str(matcos));
             common.DebugPrint("findquads(): matsin.shape = %s" % str(matsin.shape));
@@ -486,7 +506,8 @@ def findquads(Points, threshold, reflect_flag):
         #out2(:,1:2:end)=ox.*matsin+oy.*matcos
         out2[:, 0::2] = np.multiply(ox, matsin) + np.multiply(oy, matcos)
 
-        if False:
+        #if False:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): out2.shape!!!! (before /) = %s" % str(out2.shape));
             common.DebugPrint("findquads():out2[:, 2].shape = %s" % \
                                         str(out2[:, 2].shape));
@@ -514,13 +535,15 @@ def findquads(Points, threshold, reflect_flag):
         """
         out2 = out2 / np.tile(out2[:, 2], (8, 1)).T; # element wise divide
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): out2.shape (after normalize) = %s" % \
                             str(out2.shape));
             common.DebugPrint("findquads(): out2 (after normalize) = %s" % \
                             str(out2));
 
-        if False:
+        #if False:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): out2!!!! (after /) = %s" % str(out2));
 
 
@@ -528,7 +551,8 @@ def findquads(Points, threshold, reflect_flag):
         #out2=out2(:,5:8);
         out2 = out2[:, 4: 8];
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): out2.shape (after slicing) = %s" % \
                                                             str(out2.shape));
             common.DebugPrint("findquads(): out2 (after slicing) = %s" % str(out2));
@@ -539,7 +563,8 @@ def findquads(Points, threshold, reflect_flag):
         #NOT GOOD: s = np.multiply(out2, 2) - out2;
         s = out2**2 - out2;
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): s.shape = %s" % str(s.shape));
             common.DebugPrint("findquads(): s = %s" % str(s));
 
@@ -550,7 +575,8 @@ def findquads(Points, threshold, reflect_flag):
         # qq_i=diff([qq(1);qq])==0;
         # index=index|qq_i;
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): index (after |) = %s" % str(index));
 
         notIndex = np.logical_not(index); #.ravel() - not necessary
@@ -619,13 +645,15 @@ def findquads(Points, threshold, reflect_flag):
 
         c2 = c2[0]; # c2 is list of list of list.
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): c2.shape (before sort) = %s" % \
                                                         str(c2.shape))
             common.DebugPrint("findquads(): c2 (before sort) = %s" % str(c2))
         c2, c2i = Matlab.unique(c2);
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): c2.shape = %s" % (str(c2.shape)));
             common.DebugPrint("findquads(): c2 (after sort, unique) = %s" % \
                                                                 (str(c2)));
@@ -658,13 +686,14 @@ def findquads(Points, threshold, reflect_flag):
         assert dis2.ndim == 2;
 
         """
-        common.DebugPrint("findquads(): out2.shape = %s" % (str(out2.shape)));
-        common.DebugPrint("findquads(): out2 = %s" % (str(out2)));
-        common.DebugPrint("findquads(): max_dis2.shape = %s" % \
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("findquads(): out2.shape = %s" % (str(out2.shape)));
+            common.DebugPrint("findquads(): out2 = %s" % (str(out2)));
+            common.DebugPrint("findquads(): max_dis2.shape = %s" % \
                                             (str(max_dis2.shape)));
-        common.DebugPrint("findquads(): max_dis2 = %s" % \
+            common.DebugPrint("findquads(): max_dis2 = %s" % \
                                             (str(max_dis2)));
-        common.DebugPrint("findquads(): dis2.shape = %s" % \
+            common.DebugPrint("findquads(): dis2.shape = %s" % \
                                             (str(dis2.shape)));
         """
 
@@ -689,7 +718,8 @@ def findquads(Points, threshold, reflect_flag):
             #dis2=dis2(c2i,:);
             dis2 = dis2[c2i, :];
 
-        if True:
+        #if True:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("findquads(): out2.shape (before qq) = %s" % \
                                                             (str(out2.shape)));
             common.DebugPrint("findquads(): out2 = %s" % (str(out2)));
@@ -809,7 +839,8 @@ def findquads(Points, threshold, reflect_flag):
     Orientation = ori;
 
     #if False:
-    if True:
+    #if True:
+    if common.MY_DEBUG_STDOUT:
         assert Quads.shape[0] == Centroids.shape[0];
         assert Quads.shape[0] == maxDistances.shape[0];
         assert Quads.shape[0] == Orientation.shape[0];

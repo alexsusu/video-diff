@@ -58,12 +58,14 @@ def multiscale_quad_tree(r_path, threshold, scale_index):
         #n_d=zeros(1,length(RD));
         n_d = np.zeros((len(RD), 1));
 
-        if False:
+        #if False:
+        if common.MY_DEBUG_STDOUT:
             common.DebugPrint("multiscale_quad_tree(): n_d.shape = %s" % str(n_d.shape));
             common.DebugPrint("multiscale_quad_tree(): n_d = %s" % str(n_d));
 
         #common.DebugPrint("multiscale_quad_tree(): Building the tree of reference quads")
 
+        # Alex: for each reference video frame we compute the quads
         for iFor in range(len(RD)):
             # Alex: IMPORTANT: This loads into pp the multiscale Harris feature saved in file r_path+RD(i).name
             #%load harris locations of image (already computed)
@@ -88,7 +90,8 @@ def multiscale_quad_tree(r_path, threshold, scale_index):
             temp = np.zeros((out.shape[0], 1)) + iFor;
 
             #if False:
-            if True:
+            #if True:
+            if common.MY_DEBUG_STDOUT:
                 common.DebugPrint("Initially:");
                 #common.DebugPrint("multiscale_quad_tree(): pp.shape = %s" % str(pp.shape));
                 #common.DebugPrint("multiscale_quad_tree(): out.shape = %s" % str(out.shape));
@@ -200,6 +203,7 @@ def multiscale_quad_tree(r_path, threshold, scale_index):
 
             return None, all_id, all_cen, all_max, all_ori, n_d, all_quads;
 
+    tBuild1 = float(cv2.getTickCount());
 
     #tree = kdtree_build(all_quads)
     if config.KDTREE_IMPLEMENTATION == 0:
@@ -210,9 +214,14 @@ def multiscale_quad_tree(r_path, threshold, scale_index):
         tree = cv2.flann_Index(features=all_quads, params=config.FLANN_PARAMS);
     #common.DebugPrint("multiscale_quad_tree(): tree.data = %s" % str(tree.data))
 
+    tBuild2 = float(cv2.getTickCount());
+    myTimeBuild = (tBuild2 - tBuild1) / cv2.getTickFrequency();
+    print("multiscale_quad_tree(): KD-tree build took %.6f [sec]" % myTimeBuild);
+
     #if False:
-    # Printing these arrays took for 4 secs HD videos ~7 minutes !!!!TODO: takeout heavy printing
-    if True:
+    # Printing these arrays took for 4 secs HD videos ~7 minutes --> this is heavy printing
+    #if True:
+    if common.MY_DEBUG_STDOUT:
         common.DebugPrint("At the end:");
         common.DebugPrint("  multiscale_quad_tree(): all_id.shape = %s" % str(all_id.shape));
         common.DebugPrint("  multiscale_quad_tree(): all_id = %s" % str(all_id));
@@ -241,7 +250,6 @@ def multiscale_quad_tree(r_path, threshold, scale_index):
             common.DebugPrintErrorTrace();
         # NOT GOOD: <<AttributeError: 'KDTree' object has no attribute 'nbytes'>> common.DebugPrint("multiscale_quad_tree(): tree.nbytes = %s" % str(tree.nbytes));
 
-    #print "Built in %f secs" % 0.0
     t2 = float(cv2.getTickCount());
     myTime = (t2 - t1) / cv2.getTickFrequency();
     ##common.DebugPrint("multiscale_quad_tree() took %.6f [sec]" % myTime)

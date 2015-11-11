@@ -1,3 +1,5 @@
+# !!!!TODO: takeout DBGPRINT - it's already replaced with common.MY_DEBUG_STDOUT (I think):
+
 import math
 import numpy as np
 from numpy import linalg as npla
@@ -185,7 +187,7 @@ def IterationStandaloneMQR(queryFrame):
                                             radius=(tol**2), \
                                             maxResults=NUM_MAX_ELEMS, \
                                             params=search_params);
-                if DBGPRINT:
+                if common.MY_DEBUG_STDOUT and DBGPRINT:
                     """
                     common.DebugPrint("multiscale_quad_retrieval(): " \
                                     "retval (number NNs) = %s" % str(retval));
@@ -198,7 +200,7 @@ def IterationStandaloneMQR(queryFrame):
                 idx = idx[: retval];
                 dists = dists[: retval];
 
-            if DBGPRINT:
+            if common.MY_DEBUG_STDOUT and DBGPRINT:
                 print("multiscale_quad_retrieval(): " \
                         "qout[queryFrameQuad, :] = %s" % str(qout[queryFrameQuad, :]));
                 print("multiscale_quad_retrieval(): " \
@@ -224,7 +226,8 @@ def IterationStandaloneMQR(queryFrame):
             idx = np.array(idx);
 
 
-            if False:
+            #if False:
+            if common.MY_DEBUG_STDOUT:
                 common.DebugPrint("multiscale_quad_retrieval(): " \
                             "all_max.shape = %s" % str(all_max.shape));
                 common.DebugPrint("multiscale_quad_retrieval(): " \
@@ -243,7 +246,8 @@ def IterationStandaloneMQR(queryFrame):
                 dis_idx = np.array([]);
                 ori_idx = np.array([]);
             else:
-                if False:
+                #if False:
+                if common.MY_DEBUG_STDOUT:
                     common.DebugPrint("multiscale_quad_retrieval(): " \
                                         "queryFrameQuad = %s" % str(queryFrameQuad));
                     common.DebugPrint("multiscale_quad_retrieval(): " \
@@ -253,7 +257,8 @@ def IterationStandaloneMQR(queryFrame):
 
                 dis_idx = np.abs(qmaxdis[queryFrameQuad] - all_max[idx]) < MAXDIS;
 
-                if False:
+                #if False:
+                if common.MY_DEBUG_STDOUT:
                     """
                     common.DebugPrint("multiscale_quad_retrieval(): " \
                                         "idx = %s" % str(idx));
@@ -264,14 +269,16 @@ def IterationStandaloneMQR(queryFrame):
                 #idx=idx(dis_idx)
                 idx = idx[dis_idx];
 
-                if False:
+                #if False:
+                if common.MY_DEBUG_STDOUT:
                     common.DebugPrint("multiscale_quad_retrieval(): " \
                         "idx (after idx = idx[dis_idx]) = %s" % str(idx));
 
                 #ori_idx=abs(qori(i)-all_ori(idx))<MAXORI;
                 ori_idx = np.abs(qori[queryFrameQuad] - all_ori[idx]) < MAXORI;
 
-                if False:
+                #if False:
+                if common.MY_DEBUG_STDOUT:
                     """
                     common.DebugPrint("multiscale_quad_retrieval(): " \
                                             "all_ori = %s" % str(all_ori));
@@ -324,7 +331,8 @@ def IterationStandaloneMQR(queryFrame):
                 histoRange = np.array(range(RD_start, RD_end + 1));
                 hh = Matlab.hist(x=all_id[idx], binCenters=histoRange);
 
-                if False:
+                #if False:
+                if common.MY_DEBUG_STDOUT:
                     common.DebugPrint("multiscale_quad_retrieval(): " \
                                         "hh = %s" % (str(hh)));
                     common.DebugPrint("multiscale_quad_retrieval(): " \
@@ -345,7 +353,8 @@ def IterationStandaloneMQR(queryFrame):
                 #nz=find(hh~=0); # nz can be computed more optimally
                 # np.nonzero() always returns a tuple, even if it contains 1 element since hh has only 1 dimension
                 nz = np.nonzero(hh != 0)[0];
-                if False:
+                #if False:
+                if common.MY_DEBUG_STDOUT:
                     common.DebugPrint("multiscale_quad_retrieval(): " \
                                         "nz = %s" % (str(nz)));
                     common.DebugPrint("multiscale_quad_retrieval(): " \
@@ -358,7 +367,8 @@ def IterationStandaloneMQR(queryFrame):
                     #myVal = pow(math.log10(float(len(RD)) / len(nz)), 2);
                     myVal = pow(math.log10(float(len(r_harlocs)) / len(nz)), 2);
 
-                    if False:
+                    #if False:
+                    if common.MY_DEBUG_STDOUT:
                         """
                         common.DebugPrint("multiscale_quad_retrieval(): " \
                                             "len(RD) = %d" % len(RD));
@@ -375,7 +385,8 @@ def IterationStandaloneMQR(queryFrame):
                     #   votes(nz)=votes(nz)+log10(length(RD)/(length(nz)));
                     #   votes(nz)=votes(nz)+1;
 
-    if False:
+    #if False:
+    if common.MY_DEBUG_STDOUT:
         """
         common.DebugPrint("multiscale_quad_retrieval(): " \
                 "Votes_space.shape = %s" % (str(Votes_space.shape)));
@@ -449,7 +460,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
     except:
         common.DebugPrintErrorTrace();
 
-    if DBGPRINT:
+    if common.MY_DEBUG_STDOUT and DBGPRINT:
         common.DebugPrint("multiscale_quad_retrieval(): r_quadsTree = %s" % \
                             str(r_quadsTree));
 
@@ -644,7 +655,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
         points = pp[pp[:, 2] == scale_index, 0:2];
         qout, qcen, qmaxdis, qori = findquads.findquads(points, md_threshold, 0);
 
-        if DBGPRINT:
+        if common.MY_DEBUG_STDOUT and DBGPRINT:
             print("multiscale_quad_retrieval(): queryFrame = %d, " \
                           "qout.shape (number of quads for query frame queryFrame) = %s" % \
                                                  (queryFrame, str(qout.shape)));
@@ -665,8 +676,9 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
 
         assert isinstance(tolers, float);
 
-        common.DebugPrint("multiscale_quad_retrieval(): quads of query frame %d are: " % queryFrame);
-        common.DebugPrint("  qout = %s" % str(qout));
+        if common.MY_DEBUG_STDOUT:
+            common.DebugPrint("multiscale_quad_retrieval(): quads of query frame %d are: " % queryFrame);
+            common.DebugPrint("  qout = %s" % str(qout));
 
         """
         Alex: for each quad (4 floats) of the query frame from Harris feature of scale scale_index
@@ -723,7 +735,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                                                 radius=(tol**2), \
                                                 maxResults=NUM_MAX_ELEMS, \
                                                 params=search_params);
-                    if DBGPRINT:
+                    if common.MY_DEBUG_STDOUT and DBGPRINT:
                         """
                         common.DebugPrint("multiscale_quad_retrieval(): " \
                                         "retval (number NNs) = %s" % str(retval));
@@ -741,7 +753,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                     idx = idx[: retval];
                     dists = dists[: retval];
 
-                if DBGPRINT:
+                if common.MY_DEBUG_STDOUT and DBGPRINT:
                     print("multiscale_quad_retrieval(): " \
                             "qout[queryFrameQuad, :] = %s" % str(qout[queryFrameQuad, :]));
                     print("multiscale_quad_retrieval(): " \
@@ -756,7 +768,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                                 str(r_quadsTree.data[idx]));
 
                 # We print the distances to the points returned in idx
-                if DBGPRINT: # This is just for debugging purposes
+                if common.MY_DEBUG_STDOUT and DBGPRINT: # This is just for debugging purposes
                     a = qout[queryFrameQuad, :];
                     if config.KDTREE_IMPLEMENTATION == 0:
                         for myI, index in enumerate(idx):
@@ -771,7 +783,8 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                         pass;
                 idx = np.array(idx);
 
-                if False:
+                #if False:
+                if common.MY_DEBUG_STDOUT:
                     common.DebugPrint("multiscale_quad_retrieval(): " \
                                 "all_max.shape = %s" % str(all_max.shape));
                     common.DebugPrint("multiscale_quad_retrieval(): " \
@@ -790,7 +803,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                     dis_idx = np.array([]);
                     ori_idx = np.array([]);
                 else:
-                    if DBGPRINT:
+                    if common.MY_DEBUG_STDOUT and DBGPRINT:
                         print("multiscale_quad_retrieval(): " \
                                             "queryFrameQuad = %s" % str(queryFrameQuad));
                         print("multiscale_quad_retrieval(): " \
@@ -809,7 +822,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                             when we have the geolocation (GPS) coordinate for
                             each frame.
                         """
-                        if DBGPRINT:
+                        if common.MY_DEBUG_STDOUT and DBGPRINT:
                             print("multiscale_quad_retrieval(): " \
                                 "all_id = %s" % str(all_id));
 
@@ -830,7 +843,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                                                     (all_id[idx] <= 2400 - 928) );
                         idx = idx[sub_idx];
 
-                        if DBGPRINT:
+                        if common.MY_DEBUG_STDOUT and DBGPRINT:
                             print("multiscale_quad_retrieval(): " \
                                 "all_id = %s" % str(all_id));
                             print("multiscale_quad_retrieval(): " \
@@ -841,7 +854,8 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                     if FILTER:
                         dis_idx = np.abs(qmaxdis[queryFrameQuad] - all_max[idx]) < MAXDIS;
 
-                        if False:
+                        #if False:
+                        if common.MY_DEBUG_STDOUT:
                             """
                             common.DebugPrint("multiscale_quad_retrieval(): " \
                                                 "idx = %s" % str(idx));
@@ -852,7 +866,8 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                         #idx=idx(dis_idx)
                         idx = idx[dis_idx];
 
-                    if False:
+                    #if False:
+                    if common.MY_DEBUG_STDOUT:
                         common.DebugPrint("multiscale_quad_retrieval(): " \
                             "idx (after idx = idx[dis_idx]) = %s" % str(idx));
 
@@ -860,7 +875,8 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                         #ori_idx=abs(qori(i)-all_ori(idx))<MAXORI;
                         ori_idx = np.abs(qori[queryFrameQuad] - all_ori[idx]) < MAXORI;
 
-                        if False:
+                        #if False:
+		        if common.MY_DEBUG_STDOUT:
                             """
                             common.DebugPrint("multiscale_quad_retrieval(): " \
                                                     "all_ori = %s" % str(all_ori));
@@ -923,7 +939,8 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                     hh = Matlab.hist(x=all_id[idx], binCenters=histoRange);
 
                     #if False:
-                    if True:
+                    #if True:
+		    if common.MY_DEBUG_STDOUT:
                         common.DebugPrint("multiscale_quad_retrieval(): " \
                                             "hh = %s" % (str(hh)));
                         common.DebugPrint("multiscale_quad_retrieval(): " \
@@ -944,7 +961,8 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                     #nz=find(hh~=0); # nz can be computed more optimally
                     # np.nonzero() always returns a tuple, even if it contains 1 element since hh has only 1 dimension
                     nz = np.nonzero(hh != 0)[0];
-                    if False:
+                    #if False:
+	    	    if common.MY_DEBUG_STDOUT:
                         common.DebugPrint("multiscale_quad_retrieval(): " \
                                           "nz = %s" % (str(nz)));
                         common.DebugPrint("multiscale_quad_retrieval(): " \
@@ -965,7 +983,8 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                             common.DebugPrintErrorTrace();
                         """
 
-                        if False:
+                        #if False:
+		        if common.MY_DEBUG_STDOUT:
                             """
                             common.DebugPrint("multiscale_quad_retrieval(): " \
                                               "len(RD) = %d" % len(RD));
@@ -982,7 +1001,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                         #   votes(nz)=votes(nz)+log10(length(RD)/(length(nz)));
                         #   votes(nz)=votes(nz)+1;
 
-        if DBGPRINT:
+        if common.MY_DEBUG_STDOUT and DBGPRINT:
             """
             common.DebugPrint("multiscale_quad_retrieval(): " \
                     "Votes_space.shape = %s" % (str(Votes_space.shape)));
@@ -1017,7 +1036,7 @@ def multiscale_quad_retrieval(r_quadsTree, r_harlocs, q_harlocs, md_threshold, s
                                         qcen, len(r_harlocs), st_threshold, cropflag);
 
 
-    if DBGPRINT:
+    if common.MY_DEBUG_STDOUT and DBGPRINT:
         print("multiscale_quad_retrieval(scale_index=%d): " \
                             "Votes_space =\n%s" % (scale_index, str(Votes_space)));
 
