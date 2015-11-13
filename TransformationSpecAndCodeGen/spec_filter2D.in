@@ -1,0 +1,26 @@
+// We can specify for 
+// From http://docs.opencv.org/modules/imgproc/doc/filtering.html#filter2d
+//    dst(x,y) = \sum_{0 <= x' < kernel.cols; 0 <= y' < kernel.rows} kernel(x',y') * src(x + x'- anchor.x, y + y'- anchor.y)
+// So we write:
+sum = 0
+for x' in range(0, kernel_cols)
+    for y' in range(0, kernel_rows)
+        sum += kernel_x_y * src(xdst + x' - anchor_x, ydst + y' - anchor_y)
+
+//From this we need to state that:
+Hence:
+    xsrc = xdst + x' - anchor_x
+        --> xdst = xsrc - x' + anchor_x
+           Since x' in range(0, kernel_cols) then
+             xdst in range(xsrc + anchor_x, xsrc - kernel_cols + anchor_x)
+    ysrc = ydst + y' - anchor_y
+        --> ydst = ysrc - y' + anchor_y
+
+
+
+//
+    Given that the kernel is a 2D-rectangle it should be simple to show
+            that for an element from src from (r, c), the transformation adds
+            that value to elements in dst from
+                r - (kernel.rows-anchor.rows).. r + (kernel.rows-anchor.rows)
+                c - (kernel.cols-anchor.cols).. c + (kernel.cols-anchor.cols)
