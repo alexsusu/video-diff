@@ -1,0 +1,2 @@
+xsrc = xdst * cosTheta - ydst * sinTheta
+ysrc = xdst * sinTheta + ydst * cosTheta

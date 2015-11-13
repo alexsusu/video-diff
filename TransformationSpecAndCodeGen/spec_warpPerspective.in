@@ -1,0 +1,3 @@
+xsrc = (M11 * xdst + M12 * ydst + M13) / (M31 * xdst + M32 * ydst + M33)
+ysrc = (M21 * xdst + M22 * ydst + M23) / (M31 * xdst + M32 * ydst + M33)
+

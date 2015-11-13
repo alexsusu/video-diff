@@ -1,0 +1,2 @@
+xsrc = xdst * cos(a) - ydst * sin(a)
+ysrc = xdst * sin(a) + ydst * cos(a)
